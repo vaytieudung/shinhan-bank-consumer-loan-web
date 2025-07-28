@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ tính khoản vay - Ngân hàng Shinhan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="https://shinhan.com.vn/public/themes/shinhan/img/favicon2023.ico">
+    <style>
+        :root {
+            --shinhan-blue: #003087;
+            --shinhan-orange: #f28c38;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .bg-shinhan-blue { background-color: var(--shinhan-blue); }
+        .text-shinhan-blue { color: var(--shinhan-blue); }
+        .border-shinhan-blue { border-color: var(--shinhan-blue); }
+        .ring-shinhan-blue:focus { --tw-ring-color: var(--shinhan-blue); }
+        .hover\:bg-shinhan-blue-dark:hover { background-color: #002263; }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <img src="https://shinhan.com.vn/public/themes/shinhan/img/shinhan_logo_2.svg" alt="Shinhan Bank Logo" class="h-8">
+                </div>
+                <div class="hidden md:block">
+                    <nav class="flex items-center space-x-2">
+                        <a href="#" class="text-gray-600 hover:text-shinhan-blue px-3 py-2 rounded-md text-sm font-medium">Trang Chủ</a>
+                        <a href="#" class="text-gray-600 hover:text-shinhan-blue px-3 py-2 rounded-md text-sm font-medium">Sản Phẩm Vay</a>
+                        <a href="#" class="text-gray-600 hover:text-shinhan-blue px-3 py-2 rounded-md text-sm font-medium">Hỗ Trợ</a>
+                    </nav>
+                </div>
+                <div class="md:hidden">
+                    <button id="hamburger-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none" aria-expanded="false">
+                        <span class="sr-only">Mở menu chính</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <nav id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                 <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-shinhan-blue block px-3 py-2 rounded-md text-base font-medium">Trang Chủ</a>
+                <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-shinhan-blue block px-3 py-2 rounded-md text-base font-medium">Sản Phẩm Vay</a>
+                <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-shinhan-blue block px-3 py-2 rounded-md text-base font-medium">Hỗ Trợ</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-shinhan-blue uppercase">Công Cụ Tính Khoản Vay</h1>
+            <p class="text-gray-500 mt-1">Lập kế hoạch tài chính của bạn một cách dễ dàng và chính xác.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
+            
+            <div class="md:col-span-2">
+                <div class="bg-white p-6 rounded-xl shadow-lg sticky top-24">
+                    <form id="loanForm" aria-label="Biểu mẫu tính toán khoản vay">
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700" for="loanType">Loại khoản vay <span class="text-red-500">*</span></label>
+                                <select class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 ring-shinhan-blue focus:border-shinhan-blue" id="loanType" onchange="updateInterestRate()" aria-required="true">
+                                    <option value="" disabled selected>Chọn loại khoản vay</option>
+                                    <option value="tinchap">Vay tín chấp</option>
+                                    <option value="digital_tinchap">Vay tín chấp số</option>
+                                    <option value="thechap_nha">Vay thế chấp mua nhà</option>
+                                    <option value="thechap_xe">Vay thế chấp mua xe</option>
+                                    <option value="thechap_xe_cu">Vay thế chấp mua xe đã qua sử dụng</option>
+                                    <option value="tai_nha">Vay tái tài trợ nhà</option>
+                                    <option value="dam_bao">Vay đảm bảo bán lẻ (SGI)</option>
+                                </select>
+                                <div class="error text-red-500 text-xs mt-1" id="loanTypeError" role="alert"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700" for="amount">Số tiền vay (VND) <span class="text-red-500">*</span></label>
+                                <input type="text" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 ring-shinhan-blue focus:border-shinhan-blue" id="amount" oninput="formatNumber(this); validateAmount(this)" placeholder="Nhập số tiền" aria-required="true">
+                                <div class="error text-red-500 text-xs mt-1" id="amountError" role="alert"></div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700" for="term">Thời hạn vay (tháng) <span class="text-red-500">*</span></label>
+                                <select class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 ring-shinhan-blue focus:border-shinhan-blue" id="term" aria-required="true">
+                                    <option value="" disabled selected>Chọn thời hạn</option>
+                                    <option value="6">6 tháng</option>
+                                    <option value="12">12 tháng</option>
+                                    <option value="24">24 tháng</option>
+                                    <option value="36">36 tháng</option>
+                                    <option value="48">48 tháng</option>
+                                    <option value="60">60 tháng</option>
+                                    <option value="72">72 tháng</option>
+                                    <option value="84">84 tháng</option>
+                                    <option value="96">96 tháng</option>
+                                </select>
+                                <div class="error text-red-500 text-xs mt-1" id="termError" role="alert"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700" for="interest">Lãi suất (%/năm) <span class="text-red-500">*</span></label>
+                                <input type="number" class="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none" id="interest" step="0.1" readonly aria-readonly="true">
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex items-center space-x-4">
+                            <button type="button" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-shinhan-blue hover:bg-shinhan-blue-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-shinhan-blue" onclick="calculateLoan()" aria-label="Tính toán khoản vay">Tính toán</button>
+                            <button type="button" class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400" onclick="resetForm()" aria-label="Xóa biểu mẫu">Xóa</button>
+                        </div>
+                        <div class="error-summary text-red-500 text-xs text-center mt-2" id="loanCalcErrorSummary" role="alert"></div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="md:col-span-3">
+                <div id="results-container" class="bg-white p-6 rounded-xl shadow-lg min-h-full">
+                     <div id="result-placeholder" class="text-center flex flex-col justify-center items-center h-full">
+                        <svg class="w-16 h-16 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">Kết quả tính toán</h3>
+                        <p class="mt-1 text-sm text-gray-500">Kết quả và biểu đồ chi tiết sẽ được hiển thị ở đây.</p>
+                    </div>
+                    <div id="result" class="hidden" role="region" aria-live="polite"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="text-center mt-12 text-sm text-gray-500">
+             <p>Hotline hỗ trợ: <strong class="text-shinhan-blue">1800-599-921</strong> | Email: <a href="mailto:hotro@shinhanfinance.com.vn" class="text-shinhan-blue hover:underline">hotro@shinhanfinance.com.vn</a></p>
+        </div>
+    </main>
+    
+    <footer class="bg-slate-800 text-slate-400 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs">
+             <p class="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                <a href="#" class="hover:underline">Chính sách bảo mật</a>
+                <a href="#" class="hover:underline">Điều khoản sử dụng</a>
+                <a href="#" class="hover:underline">Chính sách Cookies</a>
+                <a href="#" class="hover:underline">Sitemap</a>
+            </p>
+            <p class="mt-4">© Copyright Shinhan Bank 2016-2025</p>
+        </div>
+    </footer>
+
+    <div id="loadingIndicator" class="hidden fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div class="w-16 h-16 border-4 border-t-transparent border-white rounded-full animate-spin"></div>
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+        let loanData = {};
+        let myChart = null;
+
+        function setupMobileMenu() {
+            const hamburgerButton = document.getElementById('hamburger-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if(!hamburgerButton || !mobileMenu) return;
+            const icons = hamburgerButton.querySelectorAll('svg');
+            hamburgerButton.addEventListener('click', () => {
+                const isExpanded = hamburgerButton.getAttribute('aria-expanded') === 'true';
+                hamburgerButton.setAttribute('aria-expanded', !isExpanded);
+                mobileMenu.classList.toggle('hidden');
+                icons.forEach(icon => icon.classList.toggle('hidden'));
+            });
+        }
+        
+        function getCurrentDate() {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        function saveToLocalStorage() {
+            try {
+                const encryptedData = CryptoJS.AES.encrypt(JSON.stringify(loanData), 'shinhan-secret-key').toString();
+                localStorage.setItem('loanCalcData', encryptedData);
+            } catch (error) {
+                console.error('Error saving loanData to localStorage:', error);
+            }
+        }
+
+        function loadLoanData() {
+            try {
+                const storedData = localStorage.getItem('loanCalcData');
+                if (storedData) {
+                    loanData = JSON.parse(CryptoJS.AES.decrypt(storedData, 'shinhan-secret-key').toString(CryptoJS.enc.Utf8));
+                    if(loanData.loanType) document.getElementById('loanType').value = loanData.loanType;
+                    if(loanData.amount) document.getElementById('amount').value = loanData.amount.toLocaleString('vi-VN');
+                    if(loanData.term) document.getElementById('term').value = loanData.term;
+                    if(loanData.interest) document.getElementById('interest').value = loanData.interest;
+                }
+            } catch (error) {
+                console.error('Error loading loanData from localStorage:', error);
+            }
+        }
+
+        function formatNumber(input) {
+            let value = input.value.replace(/[^0-9]/g, '');
+            let numericValue = parseInt(value, 10);
+            input.value = !isNaN(numericValue) ? numericValue.toLocaleString('vi-VN') : '';
+        }
+
+        function unformatNumber(value) {
+            return parseInt(value.replace(/[^0-9]/g, ''), 10) || 0;
+        }
+
+        function validateAmount(input) {
+            const value = unformatNumber(input.value);
+            const loanType = document.getElementById('loanType').value;
+            const limits = { tinchap: 900000000, digital_tinchap: 500000000, thechap_nha: 5000000000, thechap_xe: 2000000000, thechap_xe_cu: 2000000000, tai_nha: 5000000000, dam_bao: 1000000000 };
+            const errorElement = document.getElementById('amountError');
+            if (value > 0 && value < 10000000) {
+                errorElement.innerText = 'Số tiền vay tối thiểu 10 triệu VND.';
+            } else if (loanType && value > limits[loanType]) {
+                errorElement.innerText = `Số tiền tối đa là ${limits[loanType].toLocaleString('vi-VN')} VND.`;
+            } else {
+                errorElement.innerText = '';
+            }
+        }
+
+        function updateInterestRate() {
+            const loanType = document.getElementById('loanType').value;
+            const interestInput = document.getElementById('interest');
+            const rates = { tinchap: 11, digital_tinchap: 7.4, thechap_nha: 5.5, thechap_xe: 7.8, thechap_xe_cu: 8.5, tai_nha: 6, dam_bao: 7.0 };
+            interestInput.value = loanType && rates[loanType] ? rates[loanType] : '';
+        }
+
+        function calculateLoan() {
+            const calculateBtn = document.querySelector('#loanForm button[onclick="calculateLoan()"]');
+            calculateBtn.disabled = true;
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+
+            setTimeout(() => {
+                const loanType = document.getElementById('loanType').value;
+                const amount = unformatNumber(document.getElementById('amount').value);
+                const term = parseInt(document.getElementById('term').value);
+                const interestRate = parseFloat(document.getElementById('interest').value) / 100 / 12;
+
+                const limits = { tinchap: 900000000, digital_tinchap: 500000000, thechap_nha: 5000000000, thechap_xe: 2000000000, thechap_xe_cu: 2000000000, tai_nha: 5000000000, dam_bao: 1000000000 };
+                
+                let errors = {};
+                if (!loanType) errors.loanType = 'Vui lòng chọn loại khoản vay.';
+                if (amount < 10000000) errors.amount = 'Số tiền vay tối thiểu 10 triệu VND.';
+                else if (loanType && amount > limits[loanType]) errors.amount = `Số tiền tối đa là ${limits[loanType].toLocaleString('vi-VN')} VND.`;
+                if (isNaN(term)) errors.term = 'Vui lòng chọn thời hạn vay.';
+                
+                document.querySelectorAll('.error').forEach(el => el.innerText = '');
+                if (Object.keys(errors).length > 0) {
+                    Object.keys(errors).forEach(key => document.getElementById(`${key}Error`).innerText = errors[key]);
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                    calculateBtn.disabled = false;
+                    return;
+                }
+                
+                const r = interestRate, n = term, p = amount;
+                const monthlyPayment = Math.round(p * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
+                let remainingBalance = amount, totalInterest = 0, rows = [];
+                for (let i = 1; i <= n; i++) {
+                    const interest = Math.round(remainingBalance * r);
+                    const principal = monthlyPayment - interest;
+                    totalInterest += interest;
+                    remainingBalance -= principal;
+                    rows.push({ month: i, principal, interest, total: monthlyPayment, balance: remainingBalance < 0 ? 0 : remainingBalance });
+                }
+
+                loanData = { loanType, amount, term, interest: parseFloat(document.getElementById('interest').value), monthlyPayment, totalInterest, dateCalculated: getCurrentDate(), schedule: rows };
+                saveToLocalStorage();
+                renderResults();
+
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                calculateBtn.disabled = false;
+            }, 500);
+        }
+
+        function renderResults(page = 1) {
+            const { amount, term, monthlyPayment, totalInterest, schedule } = loanData;
+            document.getElementById('result-placeholder').classList.add('hidden');
+            document.getElementById('result').classList.remove('hidden');
+
+            const rowsPerPage = 12;
+            const totalPages = Math.ceil(term / rowsPerPage);
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedRows = schedule.slice(start, end);
+
+            const tableHtml = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tháng</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gốc</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Lãi</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tổng</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Dư nợ</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${paginatedRows.map(row => `
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${row.month}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${row.principal.toLocaleString('vi-VN')}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">${row.interest.toLocaleString('vi-VN')}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm font-semibold text-gray-900">${row.total.toLocaleString('vi-VN')}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">${row.balance.toLocaleString('vi-VN')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            let paginationHtml = '';
+            if (totalPages > 1) {
+                paginationHtml = '<nav class="mt-4 flex justify-center items-center space-x-2">';
+                for (let i = 1; i <= totalPages; i++) {
+                    paginationHtml += `<button onclick="renderResults(${i})" class="${i === page ? 'bg-shinhan-blue text-white' : 'bg-white text-gray-700 hover:bg-gray-50'} px-3 py-1 border border-gray-300 text-sm font-medium rounded-md">${i}</button>`;
+                }
+                paginationHtml += '</nav>';
+            }
+
+            document.getElementById('result').innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 text-center">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-xs text-gray-500">Thanh toán hàng tháng</p>
+                        <p class="text-lg font-bold text-shinhan-blue">${monthlyPayment.toLocaleString('vi-VN')} VND</p>
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-lg">
+                        <p class="text-xs text-gray-500">Tổng lãi phải trả</p>
+                        <p class="text-lg font-bold text-orange-600">${totalInterest.toLocaleString('vi-VN')} VND</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="text-xs text-gray-500">Tổng thanh toán</p>
+                        <p class="text-lg font-bold text-green-600">${(amount + totalInterest).toLocaleString('vi-VN')} VND</p>
+                    </div>
+                </div>
+                <div class="chart-container mb-6"><canvas id="loanChart"></canvas></div>
+                <h3 class="text-lg font-semibold mb-2">Lịch trả nợ chi tiết</h3>
+                ${tableHtml}
+                ${paginationHtml}
+                <div class="mt-6 flex justify-center space-x-4">
+                    <button class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700" onclick="exportToCSV()">Xuất CSV</button>
+                    <button class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700" onclick="exportToPDF()">Xuất PDF</button>
+                </div>
+            `;
+            
+            if (myChart) myChart.destroy();
+            const ctx = document.getElementById('loanChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: schedule.map(row => `Tháng ${row.month}`),
+                    datasets: [
+                        { label: 'Tiền gốc (VND)', data: schedule.map(row => row.principal), backgroundColor: 'rgba(0, 48, 135, 0.7)'},
+                        { label: 'Tiền lãi (VND)', data: schedule.map(row => row.interest), backgroundColor: 'rgba(242, 140, 56, 0.7)'}
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: (value) => value.toLocaleString('vi-VN') + ' VND' } } } }
+            });
+        }
+        
+        function exportToCSV() {
+            let csv = 'Tháng,Gốc (VND),Lãi (VND),Tổng (VND),Dư nợ (VND)\n';
+            loanData.schedule.forEach(row => {
+                csv += `${row.month},${row.principal},${row.interest},${row.total},${row.balance}\n`;
+            });
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'lich_tra_no_shinhan.csv';
+            link.click();
+        }
+
+        function exportToPDF() {
+            const { amount, term, monthlyPayment, totalInterest, schedule, interest } = loanData;
+            const doc = new jsPDF();
+            doc.addFont('https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/PDFFont.js', 'Inter', 'normal'); // This is not a direct font file, jsPDF needs font files
+            doc.setFont('Helvetica', 'normal'); // Fallback font
+            doc.setFontSize(16);
+            doc.text('BANG TINH KHOAN VAY - NGAN HANG SHINHAN', 105, 20, { align: 'center' });
+            doc.setFontSize(11);
+            doc.text(`Ngay tinh: ${getCurrentDate()}`, 20, 30);
+            
+            const summary = [
+                ['So tien vay:', `${amount.toLocaleString('vi-VN')} VND`],
+                ['Thoi han vay:', `${term} thang`],
+                ['Lai suat:', `${interest}%/nam`],
+                ['Thanh toan hang thang:', `${monthlyPayment.toLocaleString('vi-VN')} VND`],
+                ['Tong lai phai tra:', `${totalInterest.toLocaleString('vi-VN')} VND`],
+                ['Tong thanh toan:', `${(amount + totalInterest).toLocaleString('vi-VN')} VND`]
+            ];
+            doc.autoTable({
+                body: summary,
+                startY: 35,
+                theme: 'plain',
+                styles: { fontSize: 10, cellPadding: 1.5 }
+            });
+
+            doc.autoTable({
+                startY: doc.lastAutoTable.finalY + 10,
+                head: [['Thang', 'Goc (VND)', 'Lai (VND)', 'Tong (VND)', 'Du no (VND)']],
+                body: schedule.map(row => [
+                    row.month,
+                    row.principal.toLocaleString('vi-VN'),
+                    row.interest.toLocaleString('vi-VN'),
+                    row.total.toLocaleString('vi-VN'),
+                    row.balance.toLocaleString('vi-VN')
+                ]),
+                theme: 'grid',
+                headStyles: { fillColor: [0, 48, 135], textColor: [255, 255, 255], fontStyle: 'bold' },
+                didDrawPage: (data) => {
+                     doc.setFontSize(9);
+                     doc.text('Trang ' + doc.internal.getNumberOfPages(), data.settings.margin.left, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save('lich_tra_no_shinhan.pdf');
+        }
+
+        function resetForm() {
+            document.getElementById('loanForm').reset();
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('result-placeholder').classList.remove('hidden');
+            document.querySelectorAll('.error').forEach(el => el.innerText = '');
+            document.getElementById('interest').value = '';
+            if(myChart) myChart.destroy();
+            const calculateBtn = document.querySelector('#loanForm button[onclick="calculateLoan()"]');
+            if (calculateBtn) calculateBtn.disabled = false;
+        }
+        
+        window.onload = function() {
+            setupMobileMenu();
+            loadLoanData();
+        };
+    </script>
+</body>
+</html>
