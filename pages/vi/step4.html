@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Shinhan Bank - Xét Duyệt Hồ Sơ</title>
+    <!-- Bootstrap CSS để định kiểu cơ bản -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome cho các icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts cho font chữ Be Vietnam Pro -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Favicon của Shinhan Bank -->
+    <link rel="icon" href="https://shinhan.com.vn/favicon.ico">
+    <style>
+        /* Định nghĩa các biến CSS để dễ dàng quản lý màu sắc, kích thước và hiệu ứng */
+        :root {
+            --primary-color: #0072CE; /* Màu xanh chính của Shinhan */
+            --secondary-color: #F5F7FA; /* Màu nền phụ */
+            --accent-color: #00A859; /* Màu nhấn (thành công) */
+            --text-color: #333; /* Màu chữ chính */
+            --text-light: #555; /* Màu chữ phụ */
+            --border-color: #DEE2E6; /* Màu viền */
+            --border-radius: 12px; /* Bo góc mặc định */
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.07); /* Hiệu ứng đổ bóng */
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Hiệu ứng chuyển đổi mượt mà */
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Ngăn chặn cuộn ngang */
+        }
+
+        .hidden { display: none !important; }
+
+        /* Header */
+        .app-header {
+            background: #fff;
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; /* Giữ header cố định khi cuộn */
+            top: 0;
+            z-index: 1010;
+        }
+
+        .app-header .logo {
+            height: 30px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .hamburger {
+            background: none; border: none; font-size: 1.5rem;
+            color: var(--primary-color);
+            cursor: pointer; /* Đảm bảo con trỏ chuột thay đổi khi hover */
+        }
+
+        /* Navigation */
+        .app-nav {
+            position: fixed;
+            top: 0;
+            left: -300px; /* Ban đầu ẩn menu ngoài màn hình */
+            width: 300px;
+            height: 100%;
+            background: #fff;
+            z-index: 1020;
+            transition: left 0.3s ease; /* Hiệu ứng trượt vào/ra */
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .app-nav.open { left: 0; } /* Hiển thị menu */
+        .nav-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .nav-header img { height: 30px; }
+
+        .nav-links {
+            list-style: none;
+            margin: 0;
+            padding: 20px;
+            flex-grow: 1; /* Cho phép list chiếm không gian còn lại */
+        }
+        
+        .nav-links a {
+            display: block;
+            padding: 15px 10px;
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+        }
+
+        .nav-links a.active {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+        
+        .nav-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); /* Lớp phủ mờ khi menu mở */
+            z-index: 1015;
+        }
+        
+        /* Main Content */
+        .main-container {
+            padding: 20px;
+        }
+        
+        .content-card {
+            background: white;
+            padding: clamp(20px, 5vw, 40px); /* Padding thích ứng */
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto; /* Căn giữa card */
+            text-align: center;
+        }
+        
+        .content-card h3 {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        .content-card .subtitle {
+            color: var(--text-light);
+            margin-bottom: 40px;
+        }
+        
+        /* Circular Progress */
+        .circular-progress-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+        }
+
+        .circular-progress-svg {
+            transform: rotate(-90deg); /* Xoay để bắt đầu từ đỉnh */
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-background, .progress-bar {
+            fill: none;
+            stroke-width: 12; /* Độ dày của vòng tròn */
+        }
+        
+        .progress-background {
+            stroke: var(--border-color); /* Màu nền của vòng tròn */
+        }
+        
+        .progress-bar {
+            stroke: var(--primary-color);
+            stroke-linecap: round; /* Bo tròn đầu của thanh tiến trình */
+            transition: stroke-dashoffset 1s ease-out; /* Hiệu ứng chuyển động */
+        }
+
+        .progress-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .progress-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+        
+        .progress-percentage {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .status-text {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            min-height: 30px; /* Đảm bảo chiều cao cố định để tránh xê dịch layout */
+        }
+        
+        /* NEW: Styling for the sub-status text */
+        .sub-status-text {
+            color: var(--text-light);
+            font-size: 1rem;
+            min-height: 24px; /* Prevent layout shift */
+            margin-top: 5px;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-header { justify-content: flex-start; }
+            .app-header .logo {
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <button id="hamburger" class="hamburger" aria-label="Toggle Menu" aria-expanded="false">
+             <i class="fas fa-bars"></i>
+        </button>
+        <img src="https://shinhan.com.vn/public/themes/shinhan/img/logo.png" alt="Shinhan Bank Logo" class="logo">
+    </header>
+
+    <nav id="appNav" class="app-nav" role="navigation">
+        <div class="nav-header">
+            <img src="https://shinhan.com.vn/public/themes/shinhan/img/logo.png" alt="Shinhan Bank Logo">
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" data-nav-link="home">TRANG CHỦ</a></li>
+            <li><a href="#" data-nav-link="about">GIỚI THIỆU</a></li>
+            <li><a href="#" data-nav-link="benefits">LỢI ÍCH</a></li>
+            <li><a href="#" data-nav-link="documents">GIẤY TỜ</a></li>
+            <li><a href="#" class="active" data-nav-link="register">ĐĂNG KÝ</a></li>
+            <li><a href="#" data-nav-link="contact">LIÊN HỆ</a></li>
+        </ul>
+    </nav>
+    <div id="navOverlay" class="nav-overlay hidden"></div>
+    
+    <main class="main-container">
+        <div class="content-card">
+            <h3>Đang xem xét hồ sơ</h3>
+            <p class="subtitle">Vui lòng không đóng trình duyệt</p>
+            
+            <div class="circular-progress-container">
+                <svg class="circular-progress-svg" viewBox="0 0 120 120">
+                    <circle class="progress-background" cx="60" cy="60" r="54"></circle>
+                    <circle id="progressBarCircle" class="progress-bar" cx="60" cy="60" r="54" stroke-dasharray="339.29" stroke-dashoffset="339.29"></circle>
+                </svg>
+                <div class="progress-content">
+                    <i id="progressIcon" class="progress-icon fas fa-hourglass-start"></i>
+                    <span id="progressPercentage" class="progress-percentage">0%</span>
+                </div>
+            </div>
+
+            <p id="statusText" class="status-text"></p>
+            <!-- NEW: Sub-status text element -->
+            <p id="subStatusText" class="sub-status-text"></p>
+        </div>
+    </main>
+
+<script>
+"use strict";
+
+const LoanStatusApp = {
+    state: {
+        currentStepIndex: 0, 
+        intervalId: null, 
+    },
+
+    elements: {}, // Cache các phần tử DOM
+
+    config: {
+        redirectUrl: 'https://vaytieudung.github.io/shinhanbank/pages/vi/step5.html', // URL chuyển hướng sau khi hoàn tất
+        // UPDATE: Added a new step for disbursement
+        steps: [
+            { id: 1, text: "Xem xét thông tin cá nhân", duration: 4, icon: 'fa-user-check', subText: "" },
+            { id: 2, text: "Xác minh căn cước công dân", duration: 5, icon: 'fa-id-card', subText: "" },
+            { id: 3, text: "Kiểm tra điểm tín dụng", duration: 7, icon: 'fa-star', subText: "" },
+            { id: 4, text: "Xem xét hạn mức vay", duration: 6, icon: 'fa-calculator', subText: "" },
+            { id: 5, text: "Đánh giá năng lực tài chính", duration: 3, icon: 'fa-file-signature', subText: "" },
+            { id: 6, text: "Kết quả cuối cùng", duration: 5, icon: 'fa-money-check-dollar', subText: "Vui lòng không đóng trình duyệt." }
+        ]
+    },
+
+    init() {
+        this.cacheDOMElements();
+        this.addEventListeners();
+        this.startReviewProcess();
+    },
+    
+    cacheDOMElements() {
+        const ids = ['progressBarCircle', 'progressIcon', 'progressPercentage', 'statusText', 'subStatusText', 'hamburger', 'appNav', 'navOverlay'];
+        ids.forEach(id => this.elements[id] = document.getElementById(id));
+    },
+
+    addEventListeners() {
+        this.elements.hamburger.addEventListener('click', () => this.toggleMenu());
+        this.elements.navOverlay.addEventListener('click', () => this.toggleMenu());
+    },
+    
+    async startReviewProcess() {
+        let cumulativeProgress = 0;
+        const totalDuration = this.config.steps.reduce((acc, step) => acc + step.duration, 0);
+
+        for (const step of this.config.steps) {
+            const progressStart = cumulativeProgress;
+            const progressEnd = progressStart + (step.duration / totalDuration) * 100;
+            
+            this.updateStepUI(step, progressEnd);
+            await this.animateProgress(progressStart, progressEnd, step.duration * 1000);
+            
+            cumulativeProgress = progressEnd;
+        }
+        
+        this.updateStepUI({ text: 'Đã hoàn tất!', icon: 'fa-check-circle', subText: 'Đang chuyển hướng...' }, 100, true);
+        this.elements.progressIcon.style.color = 'var(--accent-color)';
+        
+        await this.simulateDelay(2000);
+        window.location.href = this.config.redirectUrl;
+    },
+    
+    updateStepUI(step, percentage, isCompleted = false) {
+        this.elements.statusText.textContent = step.text;
+        // UPDATE: Set the sub-status text
+        this.elements.subStatusText.textContent = step.subText || ""; 
+        this.elements.progressIcon.className = `progress-icon fas ${step.icon}`;
+        
+        if (!isCompleted || percentage === 100) {
+            this.elements.progressPercentage.textContent = `${Math.round(percentage)}%`;
+        }
+        
+        const circumference = 2 * Math.PI * 54;
+        const offset = circumference - (percentage / 100) * circumference;
+        this.elements.progressBarCircle.style.strokeDashoffset = offset;
+        
+        if (isCompleted) {
+            this.elements.progressBarCircle.style.stroke = 'var(--accent-color)';
+        }
+    },
+
+    animateProgress(startPercent, endPercent, duration) {
+        return new Promise(resolve => {
+            const startTime = performance.now();
+            const animate = (currentTime) => {
+                const elapsedTime = currentTime - startTime;
+                const progress = Math.min(elapsedTime / duration, 1);
+                const currentPercent = startPercent + (endPercent - startPercent) * progress;
+
+                this.elements.progressPercentage.textContent = `${Math.floor(currentPercent)}%`;
+                
+                const circumference = 2 * Math.PI * 54;
+                const offset = circumference - (currentPercent / 100) * circumference;
+                this.elements.progressBarCircle.style.strokeDashoffset = offset;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    resolve();
+                }
+            };
+            requestAnimationFrame(animate);
+        });
+    },
+
+    toggleMenu() {
+        this.elements.appNav.classList.toggle('open');
+        this.elements.navOverlay.classList.toggle('hidden');
+        const isExpanded = this.elements.appNav.classList.contains('open');
+        this.elements.hamburger.setAttribute('aria-expanded', isExpanded);
+    },
+
+    simulateDelay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    LoanStatusApp.init();
+});
+</script>
+
+</body>
+</html>
