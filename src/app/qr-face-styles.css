@@ -1,0 +1,252 @@
+/* QR Scanner Styles */
+.qr-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.qr-frame {
+  width: 250px;
+  height: 250px;
+  border: 3px solid #10b981;
+  border-radius: 12px;
+  position: relative;
+  background: transparent;
+  animation: qrScan 2s ease-in-out infinite;
+}
+
+.qr-frame::before,
+.qr-frame::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 4px solid #10b981;
+}
+
+.qr-frame::before {
+  top: -4px;
+  left: -4px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.qr-frame::after {
+  bottom: -4px;
+  right: -4px;
+  border-left: none;
+  border-top: none;
+}
+
+@keyframes qrScan {
+  0%, 100% {
+    border-color: #10b981;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    border-color: #059669;
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.6);
+  }
+}
+
+.qr-status {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.scanning-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  font-weight: 500;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.success-text {
+  color: #10b981;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Enhanced Face Detection Styles */
+.current-instruction {
+  text-align: center;
+  margin: 20px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.current-instruction p {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.face-detected {
+  display: inline-block;
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  animation: faceDetectedPulse 1s ease-in-out;
+}
+
+@keyframes faceDetectedPulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.liveness-step {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.liveness-step.active::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 100%;
+  background: #10b981;
+  border-radius: 2px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 4px;
+    opacity: 1;
+  }
+}
+
+.liveness-step.active .step-indicator {
+  animation: stepPulse 1s ease-in-out;
+}
+
+@keyframes stepPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+/* Enhanced Camera Container for Face Detection */
+.face-capture-view .camera-container {
+  border: 3px solid #10b981;
+  animation: faceBorder 2s ease-in-out infinite;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2);
+}
+
+@keyframes faceBorder {
+  0%, 100% {
+    border-color: #10b981;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    border-color: #059669;
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+  }
+}
+
+/* QR Scanner specific camera styles */
+.qr-scanner-modal .camera-container {
+  max-width: 350px;
+  border: 2px solid #10b981;
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2);
+}
+
+/* Enhanced Review Section Animations */
+.review-section {
+  animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.info-row:hover {
+  background-color: rgba(16, 185, 129, 0.05);
+  border-radius: 8px;
+  margin: 0 -8px;
+  padding: 12px 8px;
+  transition: all 0.2s ease;
+}
+
+/* Mobile Responsive Enhancements */
+@media (max-width: 480px) {
+  .qr-frame {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .current-instruction {
+    margin: 16px 0;
+    padding: 12px;
+  }
+  
+  .current-instruction p {
+    font-size: 16px;
+  }
+  
+  .face-detected {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .qr-frame {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .scanning-text,
+  .success-text {
+    font-size: 14px;
+  }
+}
